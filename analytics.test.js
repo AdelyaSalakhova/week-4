@@ -12,13 +12,15 @@ test('Заказы считаются отдельно от позиций; от
   assert.equal(total.spent, 41535400);
   assert.equal(total.goodsSpent, 39399000);
   assert.equal(total.servicesSpent, 2136400);
+  assert.equal(total.deliverySpent, 1880100);
+  assert.equal(total.packagingSpent, 256300);
   assert.equal(total.savings, 769000);
   assert.equal(total.quantity, 1618);
   assert.equal(total.base - total.savings, total.goodsSpent);
 });
 
 test('Средняя скидка взвешена по количеству, а не по месяцам', () => {
-  const blank = { orders: 1, delivered: 1, cancelled: 0, spent: 0, goodsSpent: 0, servicesSpent: 0, base: 10000 };
+  const blank = { orders: 1, delivered: 1, cancelled: 0, spent: 0, goodsSpent: 0, servicesSpent: 0, deliverySpent: 0, packagingSpent: 0, base: 10000 };
   const total = summarizeMonths([{ ...blank, savings: 100, quantity: 1 }, { ...blank, savings: 900, quantity: 3 }]);
   assert.equal(total.averageDiscount, 250);
   assert.equal(total.savingRate, 0.05);
@@ -32,6 +34,7 @@ test('Суммы товаров и категорий совпадают с ит
     const categories = categoriesForProducts(products);
     assert.equal(month.orders, month.delivered + month.cancelled);
     assert.equal(month.spent, month.goodsSpent + month.servicesSpent);
+    assert.equal(month.servicesSpent, month.deliverySpent + month.packagingSpent);
     assert.equal(products.reduce((sum, p) => sum + p.spent, 0), month.goodsSpent);
     assert.equal(products.reduce((sum, p) => sum + p.quantity, 0), month.quantity);
     assert.equal(products.reduce((sum, p) => sum + p.savings, 0), month.savings);
@@ -58,7 +61,7 @@ test('Выбор года и рейтинги работают на выбран
 test('Публичные данные содержат только разрешённые поля сводки', () => {
   assert.deepEqual(Object.keys(data).sort(), ['items', 'meta', 'months']);
   assert.deepEqual(Object.keys(data.meta).sort(), ['currency', 'firstMonth', 'lastMonth', 'sourceRows', 'variant']);
-  for (const month of data.months) assert.deepEqual(Object.keys(month).sort(), ['base','cancelled','delivered','goodsSpent','month','orders','quantity','savings','servicesSpent','spent']);
+  for (const month of data.months) assert.deepEqual(Object.keys(month).sort(), ['base','cancelled','delivered','deliverySpent','goodsSpent','month','orders','packagingSpent','quantity','savings','servicesSpent','spent']);
   for (const item of data.items) {
     assert.deepEqual(Object.keys(item).sort(), ['category','id','months','name']);
     assert.match(item.id, /^p\d+$/);
@@ -67,3 +70,16 @@ test('Публичные данные содержат только разреш
   }
 });
 
+
+test('Доставка и упаковка пересчитываются для года, месяца и пустого периода', () => {
+  const year = summarizeMonths(monthsForYear(data, '2026'));
+  assert.equal(year.deliverySpent, 175000);
+  assert.equal(year.packagingSpent, 36100);
+  const january = summarizeMonths(data.months.filter(month => month.month === '2026-01'));
+  assert.equal(january.deliverySpent, 27700);
+  assert.equal(january.packagingSpent, 5700);
+  assert.equal(january.spent, january.goodsSpent + january.deliverySpent + january.packagingSpent);
+  const empty = summarizeMonths([]);
+  assert.equal(empty.deliverySpent, 0);
+  assert.equal(empty.packagingSpent, 0);
+});

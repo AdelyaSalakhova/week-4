@@ -73,8 +73,6 @@ h3 { font-size: 16px; font-weight: 600; }
 .category-row { cursor: pointer; }
 .category-label { font-size: 12px; fill: #445b4b; }
 .category-value { font-size: 12px; fill: #506251; font-variant-numeric: tabular-nums; }
-.category-total { color: var(--muted); font-size: 11px; line-height: 1.8; margin-top: 14px; }
-.category-total strong { font-weight: 500; color: #445b4b; }
 .segmented { display: flex; border-radius: 4px; background: #edf1e9; padding: 2px; }
 .segmented button { font-size: 11px; padding: 4px 6px; border: 0; background: transparent; color: var(--muted); border-radius: 2px; }
 .segmented button.active { background: #fff; color: var(--green); }
@@ -107,9 +105,7 @@ h3 { font-size: 16px; font-weight: 600; }
   .page { padding-inline: 28px; }
   .monthly-grid { gap: 22px; }
   .analysis-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
-  .category-panel { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
-  .category-panel h3, .categories-chart { grid-column: 1; }
-  .category-total { grid-column: 2; grid-row: 2; }
+  .category-panel { grid-column: 1 / -1; }
   .stat-value { font-size: 29px; }
 }
 @media (max-width: 760px) {

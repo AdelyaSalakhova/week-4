@@ -2,7 +2,7 @@ export function monthsForYear(data, year) {
   return data.months.filter(month => year === 'all' || month.month.startsWith(year + '-'));
 }
 export function summarizeMonths(months) {
-  const total = { orders: 0, delivered: 0, cancelled: 0, spent: 0, goodsSpent: 0, servicesSpent: 0, savings: 0, base: 0, quantity: 0 };
+  const total = { orders: 0, delivered: 0, cancelled: 0, spent: 0, goodsSpent: 0, servicesSpent: 0, deliverySpent: 0, packagingSpent: 0, savings: 0, base: 0, quantity: 0 };
   for (const month of months) for (const key of Object.keys(total)) total[key] += month[key];
   return { ...total, averageDiscount: total.quantity ? total.savings / total.quantity : null, savingRate: total.base ? total.savings / total.base : null, averageCheck: total.delivered ? total.spent / total.delivered : null };
 }

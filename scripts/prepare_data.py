@@ -22,9 +22,10 @@ assert required.issubset(rows[0]), 'Missing CSV columns'
 number = lambda row, key: Decimal(row[key].replace(',', '.'))
 cents = lambda value: int((value * 100).to_integral_exact())
 services = 'Услуги Груши'
+service_fields = {'Доставка': 'deliverySpent', 'Упаковка': 'packagingSpent'}
 order_meta = {}
 month_orders = defaultdict(lambda: {'all': set(), 'delivered': set(), 'cancelled': set()})
-monthly = defaultdict(lambda: {'spent': 0, 'goodsSpent': 0, 'servicesSpent': 0, 'savings': 0, 'base': 0, 'quantity': 0})
+monthly = defaultdict(lambda: {'spent': 0, 'goodsSpent': 0, 'servicesSpent': 0, 'deliverySpent': 0, 'packagingSpent': 0, 'savings': 0, 'base': 0, 'quantity': 0})
 items = {}
 for row in rows:
     order, date, status = row['order_id'], row['order_date'], row['status']
@@ -50,6 +51,8 @@ for row in rows:
     month_data['spent'] += cents(amount)
     month_data['servicesSpent' if is_service else 'goodsSpent'] += cents(amount)
     if is_service:
+        assert row['item_name'] in service_fields, 'Unknown service type'
+        month_data[service_fields[row['item_name']]] += cents(amount)
         continue
     savings, base = cents(discount * quantity), cents(price * quantity)
     month_data['savings'] += savings
@@ -75,6 +78,7 @@ while f'{year:04d}-{month_num:02d}' <= last:
     month_num += 1
     if month_num == 13:
         year, month_num = year + 1, 1
+assert all(month['servicesSpent'] == month['deliverySpent'] + month['packagingSpent'] for month in months)
 catalog = []
 for index, (_, item) in enumerate(sorted(items.items()), 1):
     catalog.append({'id': f'p{index:03d}', 'name': item['name'], 'category': item['category'], 'months': [
