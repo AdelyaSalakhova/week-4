@@ -106,7 +106,10 @@ export function drawCategories(element, categories, selectedCategory, controls) 
   rows.append('rect').attr('width', width).attr('height', rowHeight).attr('fill', 'transparent');
   rows.append('text').attr('x', 0).attr('y', 16).attr('class', 'category-label').text(category => category.name);
   rows.append('text').attr('x', width - 1).attr('y', 16).attr('text-anchor', 'end').attr('class', 'category-value').text(category => formatMoney(category.spent));
-  rows.append('text').attr('x', 0).attr('y', 35).attr('class', 'category-detail').text(category => `Заказы: ${formatCount(category.orders)} · ${formatCount(category.quantity)} шт.`);
+  const counts = rows.append('text').attr('x', 0).attr('y', 35).attr('class', 'category-detail');
+  counts.append('tspan').text(category => `Заказы: ${formatCount(category.orders)}`);
+  counts.append('tspan').attr('dx', 12).attr('fill', '#849084').text('|');
+  counts.append('tspan').attr('dx', 12).text(category => `Штуки: ${formatCount(category.quantity)}`);
   rows.append('text').attr('x', width - 1).attr('y', 35).attr('text-anchor', 'end').attr('class', 'category-detail').text(category => `Ср. скидка ${formatDiscount(category.averageDiscount)}`);
   rows.append('rect').attr('x', 0).attr('y', 43).attr('width', width).attr('height', 4).attr('fill', '#edf1e9');
   rows.append('rect').attr('x', 0).attr('y', 43).attr('width', category => x(category.spent)).attr('height', 4).attr('fill', '#83a590');
