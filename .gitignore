@@ -1,0 +1,8 @@
+node_modules/
+.npm-cache/
+dist/
+*.log
+*.csv
+.env
+.env.*
+!.env.example
