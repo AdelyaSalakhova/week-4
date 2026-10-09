@@ -7,7 +7,7 @@ const axisNumber = value => value >= 1000 ? `${Math.round(value / 1000)} тыс.
 export function drawMonthly(element, months, kind, selectedMonth, controls) {
   const width = element.clientWidth;
   const height = 210;
-  const margin = { left: kind === 'spent' ? 49 : 31, right: 8, top: 10, bottom: 32 };
+  const margin = { left: kind === 'spent' ? 49 : 31, right: months.length > 12 ? 26 : 18, top: 10, bottom: 32 };
   const plotBottom = height - margin.bottom;
   const x = scaleBand().domain(months.map(month => month.month)).range([margin.left, width - margin.right]).padding(0.27);
   const value = month => kind === 'orders' ? month.orders : kind === 'spent' ? month.spent / 100 : month.quantity ? month.savings / month.quantity / 100 : null;

@@ -2,8 +2,10 @@ import { createApp, computed, nextTick, onMounted, onUnmounted, ref, shallowRef,
 import { categoriesForProducts, formatCount, formatDiscount, formatMoney, formatMonth, formatPercent, monthsForYear, periodLabel, productsForMonths, rankProducts, summarizeMonths } from './analytics.js';
 import { drawCategories, drawMonthly } from './charts.js';
 import { productImage } from './images.js';
+import DashboardSelect from './select-control.js';
 const dataUrl = new URL('./data/dashboard.json', import.meta.url).href;
 createApp({
+  components: { DashboardSelect },
   setup() {
     const data = shallowRef(null), loading = ref(true), error = ref('');
     const year = ref('all'), selectedMonth = ref(null), category = ref('all'), frequencyMetric = ref('orders'), limit = ref(10);
@@ -14,11 +16,19 @@ createApp({
     const overviewMonths = computed(() => data.value ? monthsForYear(data.value, year.value) : []);
     const selectedMonths = computed(() => selectedMonth.value ? overviewMonths.value.filter(month => month.month === selectedMonth.value) : overviewMonths.value);
     const summary = computed(() => summarizeMonths(selectedMonths.value));
-    const period = computed(() => periodLabel(selectedMonths.value));
-    const overviewPeriod = computed(() => periodLabel(overviewMonths.value));
+    const periodSelection = computed({
+      get: () => selectedMonth.value || year.value,
+      set: value => { year.value = /^\d{4}-\d{2}$/.test(value) ? value.slice(0, 4) : value; selectedMonth.value = /^\d{4}-\d{2}$/.test(value) ? value : null; hideTooltip(); },
+    });
+    const periodOptions = computed(() => [{ value: 'all', label: periodLabel(data.value?.months || []) }, ...years.value.flatMap(value => [
+      { value, label: value + ' год' },
+      ...(data.value?.months || []).filter(month => month.month.startsWith(value + '-')).map(month => ({ value: month.month, label: formatMonth(month.month), depth: 1 })),
+    ])]);
     const products = computed(() => data.value ? productsForMonths(data.value, selectedMonths.value) : []);
     const categories = computed(() => categoriesForProducts(products.value));
     const categoryOptions = computed(() => [...new Set((data.value?.items || []).map(item => item.category))].sort((a, b) => a.localeCompare(b, 'ru')));
+    const categorySelectOptions = computed(() => [{ value: 'all', label: 'Все категории' }, ...categoryOptions.value.map(value => ({ value, label: value }))]);
+    const limitOptions = [{ value: 5, label: 'Топ-5' }, { value: 10, label: 'Топ-10' }];
     const filteredProducts = computed(() => products.value.filter(product => category.value === 'all' || product.category === category.value));
     const frequencyTop = computed(() => rankProducts(filteredProducts.value, frequencyMetric.value, Number(limit.value)));
     const spendingTop = computed(() => rankProducts(filteredProducts.value, 'spent', Number(limit.value)));
@@ -48,7 +58,7 @@ createApp({
       drawMonthly(discountChart.value, overviewMonths.value, 'discount', selectedMonth.value, controls);
     }
     function renderCategories() { if (categoriesChart.value) drawCategories(categoriesChart.value, categories.value, category.value, controls); }
-    watch(year, () => { selectedMonth.value = null; hideTooltip(); });
+    watch(year, hideTooltip);
     watch([overviewMonths, selectedMonth], async () => { await nextTick(); renderMonthly(); renderCategories(); });
     watch([categories, category], async () => { hideTooltip(); await nextTick(); renderCategories(); });
     const dismiss = event => { if (event.key === 'Escape') hideTooltip(); };
@@ -73,7 +83,7 @@ createApp({
       window.addEventListener('keydown', dismiss);
     });
     onUnmounted(() => { observer?.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('scroll', hideTooltip); window.removeEventListener('keydown', dismiss); });
-    return { data, loading, error, year, years, selectedMonth, category, categoryOptions, frequencyMetric, limit, summary, period, overviewPeriod,
+    return { data, loading, error, year, years, selectedMonth, category, categoryOptions, categorySelectOptions, limitOptions, frequencyMetric, limit, summary, periodSelection, periodOptions,
       ordersChart, spendChart, discountChart, categoriesChart, categories, filteredProducts, frequencyTop, spendingTop, frequencyMaximum, spendingMaximum,
       productImage, categoryGoodsTotal, hasFilters, tooltip, tooltipStyle, hideTooltip, showTooltip, resetFilters, formatCount, formatMoney, formatDiscount, formatPercent, formatMonth };
   },

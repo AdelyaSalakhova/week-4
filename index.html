@@ -4,28 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#fafbf8" />
-  <meta name="description" content="Интерактивная история заказов: месячная динамика, скидки, любимые товары и траты по категориям." />
-  <title>История заказов — дашборд</title>
+  <meta name="description" content="Заказы пользователей: месячная динамика, скидки, любимые товары и траты по категориям." />
+  <title>Заказы пользователей</title>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
 <div id="app" class="page">
-  <header class="header"><div><p class="eyebrow">ПОТРЕБЛЕНИЕ И РАСХОДЫ</p><h1>История заказов</h1></div><span class="dataset-label">Учебный датасет · вариант C</span></header>
+  <header class="header"><h1>Заказы пользователей</h1>
+    <div v-if="data" class="toolbar-controls"><div class="filter-control period-filter"><span>Период</span><dashboard-select v-model="periodSelection" :options="periodOptions" label="Период" control-id="period-options" /></div><button class="reset-button" :disabled="!hasFilters" @click="resetFilters">Сбросить</button></div>
+  </header>
   <main v-cloak>
-    <p v-if="loading" class="state" role="status">Загружаем историю заказов…</p>
+    <p v-if="loading" class="state" role="status">Загружаем заказы…</p>
     <p v-else-if="error" class="state error" role="alert">{{ error }}</p>
     <template v-else>
-      <div class="period-toolbar"><div><p class="period-label">{{ period }}</p><p class="selection-hint">{{ selectedMonth ? 'Выбран один месяц. Нажмите на него ещё раз, чтобы снять выбор.' : 'Выберите месяц на графике, чтобы рассмотреть его подробнее.' }}</p></div>
-        <div class="toolbar-controls"><label>Период<select v-model="year" aria-label="Период"><option value="all">Весь период</option><option v-for="item in years" :value="item" :key="item">{{ item }} год</option></select></label><button class="reset-button" :disabled="!hasFilters" @click="resetFilters">Сбросить фильтры</button></div>
-      </div>
       <section class="summary" aria-label="Основные показатели выбранного периода">
-        <article class="stat"><h2>Заказы</h2><p class="stat-value" data-stat="orders">{{ formatCount(summary.orders) }}</p><p class="stat-note">{{ formatCount(summary.delivered) }} доставлено · {{ formatCount(summary.cancelled) }} отменено</p></article>
-        <article class="stat"><h2>Потрачено</h2><p class="stat-value" data-stat="spent">{{ formatMoney(summary.spent) }}</p><p class="stat-note">С учётом доставки и упаковки</p></article>
+        <article class="stat"><h2>Заказы</h2><button type="button" class="stat-value stat-trigger" data-stat="orders" :aria-label="'Заказы: ' + formatCount(summary.orders)" :aria-describedby="tooltip?.kind === 'orders' ? 'dashboard-tooltip' : undefined" @mouseenter="showTooltip($event, {kind:'orders', summary})" @mousemove="showTooltip($event, {kind:'orders', summary})" @focus="showTooltip($event, {kind:'orders', summary})" @mouseleave="hideTooltip" @blur="hideTooltip" @click="showTooltip($event, {kind:'orders', summary})">{{ formatCount(summary.orders) }}</button></article>
+        <article class="stat"><h2>Сумма трат</h2><p class="stat-value" data-stat="spent">{{ formatMoney(summary.spent) }}</p><p class="stat-note">С учётом доставки и упаковки</p></article>
         <article class="stat"><h2>Средняя скидка</h2><p class="stat-value amber-text" data-stat="discount">{{ formatDiscount(summary.averageDiscount) }}</p><p class="stat-note">На единицу товара, включая товары без скидки</p></article>
         <article class="stat"><h2>Экономия</h2><p class="stat-value" data-stat="savings">{{ formatMoney(summary.savings) }}</p><p class="stat-note">{{ formatPercent(summary.savingRate) }} от стоимости товаров до скидок</p></article>
       </section>
       <section class="monthly-section" aria-labelledby="monthly-title">
-        <div class="section-heading"><h2 id="monthly-title">Динамика по месяцам</h2><span class="section-note">{{ overviewPeriod }}</span></div>
+        <div class="section-heading"><h2 id="monthly-title">Динамика по месяцам</h2></div>
         <div class="monthly-grid">
           <article class="chart-panel"><div class="panel-heading"><h3>Количество заказов</h3><span class="unit">шт.</span></div><div class="mini-legend"><span><i class="legend-dot green"></i>Доставлено</span><span><i class="legend-dot gray"></i>Отменено</span></div><div ref="ordersChart" class="monthly-chart orders-chart"></div></article>
           <article class="chart-panel"><div class="panel-heading"><h3>Сумма трат</h3><span class="unit">₽</span></div><p class="panel-note">Только доставленные заказы</p><div ref="spendChart" class="monthly-chart spend-chart"></div></article>
@@ -33,32 +32,30 @@
         </div>
       </section>
       <section class="products-section" aria-labelledby="products-title">
-        <div class="section-heading product-heading"><div><h2 id="products-title">Товары и категории</h2><p class="section-note">{{ formatCount(filteredProducts.length) }} товаров · {{ selectedMonth ? formatMonth(selectedMonth) : period }}</p></div>
-          <div class="product-controls"><label>Категория<select v-model="category" aria-label="Категория"><option value="all">Все категории</option><option v-for="item in categoryOptions" :value="item" :key="item">{{ item }}</option></select></label><label>Показать<select v-model="limit" aria-label="Размер рейтинга"><option :value="5">Топ-5</option><option :value="10">Топ-10</option></select></label></div>
+        <div class="section-heading product-heading"><div><h2 id="products-title">Товары и категории</h2><p class="section-note">{{ formatCount(filteredProducts.length) }} товаров</p></div>
+          <div class="product-controls"><div class="filter-control category-filter"><span>Категория</span><dashboard-select v-model="category" :options="categorySelectOptions" label="Категория" control-id="category-options" /></div><div class="filter-control limit-filter"><span>Показать</span><dashboard-select v-model="limit" :options="limitOptions" label="Размер рейтинга" control-id="limit-options" /></div></div>
         </div>
         <div class="analysis-grid">
-          <article class="category-panel"><h3>Куда уходят деньги</h3><p class="panel-note">Нажмите на категорию, чтобы выбрать её</p><div ref="categoriesChart" class="categories-chart"></div><p class="category-total">Товары: <strong>{{ formatMoney(summary.goodsSpent) }}</strong><br />Доставка и упаковка: {{ formatMoney(summary.servicesSpent) }}</p></article>
+          <article class="category-panel"><h3>Куда уходят деньги</h3><div ref="categoriesChart" class="categories-chart"></div><p class="category-total">Товары: <strong>{{ formatMoney(summary.goodsSpent) }}</strong><br />Доставка и упаковка: {{ formatMoney(summary.servicesSpent) }}</p></article>
           <article class="ranking-panel"><div class="panel-heading"><h3>Чаще всего заказывают</h3><div class="segmented" aria-label="Показатель частоты"><button :class="{active: frequencyMetric === 'orders'}" :aria-pressed="frequencyMetric === 'orders'" @click="frequencyMetric = 'orders'">Заказы</button><button :class="{active: frequencyMetric === 'quantity'}" :aria-pressed="frequencyMetric === 'quantity'" @click="frequencyMetric = 'quantity'">Штуки</button></div></div><p class="panel-note">{{ frequencyMetric === 'orders' ? 'В скольких заказах встречается товар' : 'Сколько единиц товара получено' }}</p>
             <ol class="ranking-list"><li v-for="(product, index) in frequencyTop" :key="product.id"><button class="product-row" @mouseenter="showTooltip($event, {kind:'product', product})" @mousemove="showTooltip($event, {kind:'product', product})" @focus="showTooltip($event, {kind:'product', product})" @mouseleave="hideTooltip" @blur="hideTooltip" @click="showTooltip($event, {kind:'product', product})" :aria-label="product.name + ', ' + product[frequencyMetric] + (frequencyMetric === 'orders' ? ' заказов' : ' штук')"><span class="rank-number">{{ index + 1 }}</span><img v-if="productImage(product)" class="product-thumb" :src="productImage(product)" alt="" loading="lazy" decoding="async" width="32" height="32" /><span class="rank-product"><span class="product-name">{{ product.name }}</span><span class="rank-bar-track"><span :style="{width: product[frequencyMetric] / frequencyMaximum * 100 + '%'}"></span></span></span><strong class="rank-value">{{ formatCount(product[frequencyMetric]) }}</strong></button></li></ol>
             <p v-if="!frequencyTop.length" class="empty-state">В этом периоде нет товаров выбранной категории.</p>
           </article>
-          <article class="ranking-panel"><div class="panel-heading"><h3>Больше всего тратят</h3><span class="unit">₽</span></div><p class="panel-note">Сумма после применения скидок</p>
+          <article class="ranking-panel"><div class="panel-heading"><h3>Больше всего тратят</h3></div><p class="panel-note">Сумма после применения скидок</p>
             <ol class="ranking-list spend-ranking"><li v-for="(product, index) in spendingTop" :key="product.id"><button class="product-row" @mouseenter="showTooltip($event, {kind:'product', product})" @mousemove="showTooltip($event, {kind:'product', product})" @focus="showTooltip($event, {kind:'product', product})" @mouseleave="hideTooltip" @blur="hideTooltip" @click="showTooltip($event, {kind:'product', product})" :aria-label="product.name + ', ' + formatMoney(product.spent)"><span class="rank-number">{{ index + 1 }}</span><img v-if="productImage(product)" class="product-thumb" :src="productImage(product)" alt="" loading="lazy" decoding="async" width="32" height="32" /><span class="rank-product"><span class="product-name">{{ product.name }}</span><span class="rank-bar-track"><span :style="{width: product.spent / spendingMaximum * 100 + '%'}"></span></span></span><strong class="rank-value">{{ formatMoney(product.spent) }}</strong></button></li></ol>
             <p v-if="!spendingTop.length" class="empty-state">В этом периоде нет товаров выбранной категории.</p>
           </article>
         </div>
-        <p class="analysis-note">Рейтинги учитывают доставленные товары. Фильтр категорий меняет оба рейтинга; доставка и упаковка показаны отдельно.</p>
       </section>
-      <details class="method"><summary>Как считаются показатели</summary><div class="method-body"><p>Один заказ считается один раз, независимо от числа позиций в нём. Серые части столбиков показывают отменённые заказы; их стоимость не включена в траты и скидки.</p><p>Средняя скидка — сумма скидок на товары, делённая на количество полученных единиц. Товары без скидки тоже входят в расчёт. Экономия — разница между исходной и фактической стоимостью всех товаров.</p><p>Частота — число отдельных доставленных заказов, содержащих товар. Переключатель «Штуки» показывает количество единиц. Траты по товарам и категориям — фактически оплаченная сумма после скидок.</p><p>Источник: учебный датасет первой недели, вариант C. Период данных: сентябрь 2021 — август 2026. В опубликованной сводке нет адресов и исходных идентификаторов заказов.</p></div></details>
-      <div v-if="tooltip" class="tooltip" :style="tooltipStyle" role="tooltip">
-        <template v-if="tooltip.kind === 'month'"><h4>{{ formatMonth(tooltip.month.month) }}</h4><dl><dt>Заказы</dt><dd>{{ tooltip.month.orders }}</dd><dt>Доставлено / отменено</dt><dd>{{ tooltip.month.delivered }} / {{ tooltip.month.cancelled }}</dd><dt>Потрачено</dt><dd>{{ formatMoney(tooltip.month.spent) }}</dd><dt>Средняя скидка</dt><dd>{{ formatDiscount(tooltip.month.quantity ? tooltip.month.savings / tooltip.month.quantity : null) }}</dd><dt>Экономия</dt><dd>{{ formatMoney(tooltip.month.savings) }}</dd></dl><p class="tooltip-hint">Нажмите, чтобы выбрать месяц</p></template>
-        <template v-else-if="tooltip.kind === 'category'"><h4>{{ tooltip.category.name }}</h4><dl><dt>Потрачено</dt><dd>{{ formatMoney(tooltip.category.spent) }}</dd><dt>Доля трат на товары</dt><dd>{{ formatPercent(tooltip.category.spent / categoryGoodsTotal) }}</dd><dt>Единиц товара</dt><dd>{{ formatCount(tooltip.category.quantity) }}</dd></dl><p class="tooltip-hint">Нажмите, чтобы выбрать категорию</p></template>
+      <div v-if="tooltip" id="dashboard-tooltip" class="tooltip" :style="tooltipStyle" role="tooltip">
+        <template v-if="tooltip.kind === 'orders'"><h4>Заказы</h4><dl><dt>Доставлено</dt><dd>{{ formatCount(tooltip.summary.delivered) }}</dd><dt>Отменено</dt><dd>{{ formatCount(tooltip.summary.cancelled) }}</dd></dl></template>
+        <template v-else-if="tooltip.kind === 'month'"><h4>{{ formatMonth(tooltip.month.month) }}</h4><dl><dt>Заказы</dt><dd>{{ tooltip.month.orders }}</dd><dt>Доставлено</dt><dd>{{ tooltip.month.delivered }}</dd><dt>Отменено</dt><dd>{{ tooltip.month.cancelled }}</dd><dt>Потрачено</dt><dd>{{ formatMoney(tooltip.month.spent) }}</dd><dt>Средняя скидка</dt><dd>{{ formatDiscount(tooltip.month.quantity ? tooltip.month.savings / tooltip.month.quantity : null) }}</dd><dt>Экономия</dt><dd>{{ formatMoney(tooltip.month.savings) }}</dd></dl></template>
+        <template v-else-if="tooltip.kind === 'category'"><h4>{{ tooltip.category.name }}</h4><dl><dt>Потрачено</dt><dd>{{ formatMoney(tooltip.category.spent) }}</dd><dt>Доля трат на товары</dt><dd>{{ formatPercent(tooltip.category.spent / categoryGoodsTotal) }}</dd><dt>Единиц товара</dt><dd>{{ formatCount(tooltip.category.quantity) }}</dd></dl></template>
         <template v-else><div class="tooltip-product-heading"><img v-if="productImage(tooltip.product)" :src="productImage(tooltip.product)" alt="" class="tooltip-product-image" width="64" height="64" /><div><h4>{{ tooltip.product.name }}</h4><p class="tooltip-category">{{ tooltip.product.category }}</p></div></div><dl><dt>Заказы с товаром</dt><dd>{{ tooltip.product.orders }}</dd><dt>Количество, шт.</dt><dd>{{ tooltip.product.quantity }}</dd><dt>Потрачено</dt><dd>{{ formatMoney(tooltip.product.spent) }}</dd><dt>Экономия</dt><dd>{{ formatMoney(tooltip.product.savings) }}</dd></dl></template>
       </div>
     </template>
   </main>
   <noscript><p class="state">Включите JavaScript, чтобы посмотреть графики.</p></noscript>
-  <footer><span>История заказов</span><span>Vue.js + D3.js</span></footer>
 </div>
 <script type="module" src="/app.js"></script>
 </body>
