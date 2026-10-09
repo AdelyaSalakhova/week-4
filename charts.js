@@ -1,5 +1,5 @@
 import { axisBottom, axisLeft, line, max, scaleBand, scaleLinear, select } from 'd3';
-import { formatMonth, formatMoney } from './analytics.js';
+import { formatMonth, formatMoney, formatCount, formatDiscount } from './analytics.js';
 const GREEN = '#28604b';
 const AMBER = '#ba7d33';
 const axisNumber = value => value >= 1000 ? `${Math.round(value / 1000)} тыс.` : String(value);
@@ -89,24 +89,25 @@ export function drawMonthly(element, months, kind, selectedMonth, controls) {
 
 export function drawCategories(element, categories, selectedCategory, controls) {
   const width = element.clientWidth;
-  const rowHeight = 34;
+  const rowHeight = 58;
   const height = Math.max(70, categories.length * rowHeight);
-  const labelWidth = Math.min(122, width * 0.42);
-  const valueWidth = 76;
-  const x = scaleLinear().domain([0, max(categories, category => category.spent) || 1]).range([0, Math.max(10, width - labelWidth - valueWidth - 14)]);
+  const x = scaleLinear().domain([0, max(categories, category => category.spent) || 1]).range([0, width]);
   const svg = select(element).selectAll('svg').data([null]).join('svg').attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height)
-    .attr('role', 'group').attr('aria-label', 'Траты на товары по категориям. Нажмите на категорию для фильтрации рейтингов.');
+    .attr('role', 'group').attr('aria-label', 'Категории: траты, заказы, количество и средняя скидка на товар.');
   svg.selectAll('*').remove();
   const rows = svg.append('g').selectAll('g').data(categories).join('g').attr('class', 'category-row')
     .attr('data-category', category => category.name).attr('transform', (_, index) => `translate(0,${index * rowHeight})`)
-    .attr('role', 'button').attr('tabindex', 0).attr('aria-label', category => `${category.name}, ${formatMoney(category.spent)}`)
+    .attr('role', 'button').attr('tabindex', 0).attr('aria-label', category => `${category.name}, ${formatMoney(category.spent)}, ${category.orders} заказов, ${category.quantity} штук, средняя скидка ${formatDiscount(category.averageDiscount)}`)
     .attr('aria-pressed', category => String(category.name === selectedCategory))
     .attr('opacity', category => selectedCategory === 'all' || selectedCategory === category.name ? 1 : 0.4)
     .on('pointerenter pointermove focus', (event, category) => controls.show(event, { kind: 'category', category }))
     .on('pointerleave blur', controls.hide).on('click', (_, category) => controls.selectCategory(category.name))
     .on('keydown', (event, category) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); controls.selectCategory(category.name); } });
   rows.append('rect').attr('width', width).attr('height', rowHeight).attr('fill', 'transparent');
-  rows.append('text').attr('x', 0).attr('y', 20).attr('class', 'category-label').text(category => category.name);
-  rows.append('rect').attr('x', labelWidth).attr('y', 10).attr('width', category => x(category.spent)).attr('height', 12).attr('rx', 1).attr('fill', '#83a590');
-  rows.append('text').attr('x', width - 1).attr('y', 20).attr('text-anchor', 'end').attr('class', 'category-value').text(category => formatMoney(category.spent));
+  rows.append('text').attr('x', 0).attr('y', 16).attr('class', 'category-label').text(category => category.name);
+  rows.append('text').attr('x', width - 1).attr('y', 16).attr('text-anchor', 'end').attr('class', 'category-value').text(category => formatMoney(category.spent));
+  rows.append('text').attr('x', 0).attr('y', 35).attr('class', 'category-detail').text(category => `Заказы: ${formatCount(category.orders)} · ${formatCount(category.quantity)} шт.`);
+  rows.append('text').attr('x', width - 1).attr('y', 35).attr('text-anchor', 'end').attr('class', 'category-detail').text(category => `Ср. скидка ${formatDiscount(category.averageDiscount)}`);
+  rows.append('rect').attr('x', 0).attr('y', 43).attr('width', width).attr('height', 4).attr('fill', '#edf1e9');
+  rows.append('rect').attr('x', 0).attr('y', 43).attr('width', category => x(category.spent)).attr('height', 4).attr('fill', '#83a590');
 }

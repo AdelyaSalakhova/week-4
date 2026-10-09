@@ -1,4 +1,5 @@
 export function monthsForYear(data, year) {
+  if (year === 'recent') return data.months.slice(-24);
   return data.months.filter(month => year === 'all' || month.month.startsWith(year + '-'));
 }
 export function summarizeMonths(months) {
@@ -15,14 +16,26 @@ export function productsForMonths(data, months) {
     return records.length ? [{ id: item.id, name: item.name, category: item.category, ...total }] : [];
   });
 }
-export function categoriesForProducts(products) {
+export function categoryOrdersForMonths(data, months) {
+  const selected = new Set(months.map(month => month.month));
+  return data.categories.map(category => ({ name: category.name, orders: category.months.reduce((total, month) => total + (selected.has(month.month) ? month.orders : 0), 0) }));
+}
+export function productPriceHistory(data, id, months) {
+  const records = new Map((data.items.find(item => item.id === id)?.months || []).map(record => [record.month, record]));
+  return months.map(({ month }) => {
+    const record = records.get(month);
+    return { month, quantity: record?.quantity || 0, price: record?.quantity ? record.spent / record.quantity : null };
+  });
+}
+export function categoriesForProducts(products, orderCounts = []) {
   const categories = new Map();
+  const orders = new Map(orderCounts.map(category => [category.name, category.orders]));
   for (const product of products) {
-    const row = categories.get(product.category) || { name: product.category, spent: 0, quantity: 0, products: 0 };
-    row.spent += product.spent; row.quantity += product.quantity; row.products++;
+    const row = categories.get(product.category) || { name: product.category, spent: 0, quantity: 0, savings: 0, products: 0, orders: orders.get(product.category) || 0 };
+    row.spent += product.spent; row.quantity += product.quantity; row.savings += product.savings; row.products++;
     categories.set(row.name, row);
   }
-  return [...categories.values()].sort((a, b) => b.spent - a.spent || a.name.localeCompare(b.name, 'ru'));
+  return [...categories.values()].map(category => ({ ...category, averageDiscount: category.quantity ? category.savings / category.quantity : null })).sort((a, b) => b.spent - a.spent || a.name.localeCompare(b.name, 'ru'));
 }
 export function rankProducts(products, metric, limit = 10) {
   return [...products].sort((a, b) => b[metric] - a[metric] || a.name.localeCompare(b.name, 'ru')).slice(0, limit);

@@ -27,6 +27,7 @@ order_meta = {}
 month_orders = defaultdict(lambda: {'all': set(), 'delivered': set(), 'cancelled': set()})
 monthly = defaultdict(lambda: {'spent': 0, 'goodsSpent': 0, 'servicesSpent': 0, 'deliverySpent': 0, 'packagingSpent': 0, 'savings': 0, 'base': 0, 'quantity': 0})
 items = {}
+category_orders = defaultdict(lambda: defaultdict(set))
 for row in rows:
     order, date, status = row['order_id'], row['order_date'], row['status']
     assert status in {'доставлен', 'отменен'}, 'Unknown order status'
@@ -58,6 +59,7 @@ for row in rows:
     month_data['savings'] += savings
     month_data['base'] += base
     month_data['quantity'] += quantity
+    category_orders[row['category']][month].add(order)
     key = (row['category'], row['item_name'])
     if key not in items:
         items[key] = {'name': row['item_name'], 'category': row['category'], 'months': {}}
@@ -89,7 +91,7 @@ assert sum(month['orders'] for month in months) == len(order_meta)
 assert sum(month['spent'] for month in months) == sum(cents(number(row, 'amount')) for row in rows if row['status'] == 'доставлен')
 assert sum(record['spent'] for item in catalog for record in item['months']) == sum(month['goodsSpent'] for month in months)
 assert sum(record['savings'] for item in catalog for record in item['months']) == sum(month['savings'] for month in months)
-output = {'meta': {'variant': 'C', 'firstMonth': first, 'lastMonth': last, 'sourceRows': len(rows), 'currency': 'RUB'}, 'months': months, 'items': catalog}
+output = {'meta': {'variant': 'C', 'firstMonth': first, 'lastMonth': last, 'sourceRows': len(rows), 'currency': 'RUB'}, 'months': months, 'items': catalog, 'categories': [{'name': name, 'months': [{'month': month, 'orders': len(orders)} for month, orders in sorted(records.items())]} for name, records in sorted(category_orders.items())]}
 serialized = json.dumps(output, ensure_ascii=False, separators=(',', ':'))
 assert 'delivery_address' not in serialized and 'order_id' not in serialized
 for row in rows:

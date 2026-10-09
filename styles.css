@@ -127,3 +127,16 @@ h3 { font-size: 16px; font-weight: 600; }
   .limit-filter .select-control { width: 80px; }
   .categories-chart { padding-top: 18px; }
 }
+
+.period-recent { margin-top: 10px; padding-top: 0; border-top: 0; }
+.period-recent + .period-actions { margin-top: 5px; padding-top: 6px; }
+.current-month-label { color: var(--muted); font-size: 13px; }
+.current-value { font-size: 22px; font-weight: 600; color: var(--green); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.current-value.amber-text { color: #a47334; }
+.category-detail { font-size: 12px; fill: #657269; font-variant-numeric: tabular-nums; }
+.tooltip.is-product { width: 360px; }
+.price-trend-heading { display: flex; align-items: baseline; justify-content: space-between; margin-top: 17px; }
+.price-trend-heading h5 { margin: 0; font-size: 13px; font-weight: 600; }
+.price-trend-heading span, .price-trend-note { font-size: 12px; color: var(--muted); }
+.price-trend-chart { display: block; width: 100%; height: auto; margin-top: 4px; }
+.price-trend-note { line-height: 1.5; margin-top: 3px; }
