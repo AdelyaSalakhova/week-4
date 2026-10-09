@@ -11,7 +11,7 @@
 <body>
 <div id="app" class="page">
   <header class="header"><h1>Заказы пользователей</h1>
-    <div v-if="data" class="toolbar-controls"><div class="filter-control period-filter"><span>Период</span><dashboard-select v-model="periodSelection" :options="periodOptions" label="Период" control-id="period-options" /></div><button class="reset-button" :disabled="!hasFilters" @click="resetFilters">Сбросить</button></div>
+    <div v-if="data" class="toolbar-controls"><div class="filter-control period-filter"><span>Период</span><period-picker v-model="periodSelection" :months="data.months" /></div><button class="reset-button" :disabled="!hasFilters" @click="resetFilters">Сбросить</button></div>
   </header>
   <main v-cloak>
     <p v-if="loading" class="state" role="status">Загружаем заказы…</p>

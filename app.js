@@ -1,18 +1,18 @@
 import { createApp, computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue/dist/vue.esm-bundler.js';
-import { categoriesForProducts, formatCount, formatDiscount, formatMoney, formatMonth, formatPercent, monthsForYear, periodLabel, productsForMonths, rankProducts, summarizeMonths } from './analytics.js';
+import { categoriesForProducts, formatCount, formatDiscount, formatMoney, formatMonth, formatPercent, monthsForYear, productsForMonths, rankProducts, summarizeMonths } from './analytics.js';
 import { drawCategories, drawMonthly } from './charts.js';
 import { productImage } from './images.js';
 import DashboardSelect from './select-control.js';
+import PeriodPicker from './period-picker.js';
 const dataUrl = new URL('./data/dashboard.json', import.meta.url).href;
 createApp({
-  components: { DashboardSelect },
+  components: { DashboardSelect, PeriodPicker },
   setup() {
     const data = shallowRef(null), loading = ref(true), error = ref('');
     const year = ref('all'), selectedMonth = ref(null), category = ref('all'), frequencyMetric = ref('orders'), limit = ref(10);
     const ordersChart = ref(null), spendChart = ref(null), discountChart = ref(null), categoriesChart = ref(null);
     const tooltip = shallowRef(null);
     let observer, frame;
-    const years = computed(() => [...new Set((data.value?.months || []).map(month => month.month.slice(0, 4)))].sort().reverse());
     const overviewMonths = computed(() => data.value ? monthsForYear(data.value, year.value) : []);
     const selectedMonths = computed(() => selectedMonth.value ? overviewMonths.value.filter(month => month.month === selectedMonth.value) : overviewMonths.value);
     const summary = computed(() => summarizeMonths(selectedMonths.value));
@@ -20,10 +20,6 @@ createApp({
       get: () => selectedMonth.value || year.value,
       set: value => { year.value = /^\d{4}-\d{2}$/.test(value) ? value.slice(0, 4) : value; selectedMonth.value = /^\d{4}-\d{2}$/.test(value) ? value : null; hideTooltip(); },
     });
-    const periodOptions = computed(() => [{ value: 'all', label: periodLabel(data.value?.months || []) }, ...years.value.flatMap(value => [
-      { value, label: value + ' год' },
-      ...(data.value?.months || []).filter(month => month.month.startsWith(value + '-')).map(month => ({ value: month.month, label: formatMonth(month.month), depth: 1 })),
-    ])]);
     const products = computed(() => data.value ? productsForMonths(data.value, selectedMonths.value) : []);
     const categories = computed(() => categoriesForProducts(products.value));
     const categoryOptions = computed(() => [...new Set((data.value?.items || []).map(item => item.category))].sort((a, b) => a.localeCompare(b, 'ru')));
@@ -83,7 +79,7 @@ createApp({
       window.addEventListener('keydown', dismiss);
     });
     onUnmounted(() => { observer?.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('scroll', hideTooltip); window.removeEventListener('keydown', dismiss); });
-    return { data, loading, error, year, years, selectedMonth, category, categoryOptions, categorySelectOptions, limitOptions, frequencyMetric, limit, summary, periodSelection, periodOptions,
+    return { data, loading, error, year, selectedMonth, category, categoryOptions, categorySelectOptions, limitOptions, frequencyMetric, limit, summary, periodSelection,
       ordersChart, spendChart, discountChart, categoriesChart, categories, filteredProducts, frequencyTop, spendingTop, frequencyMaximum, spendingMaximum,
       productImage, categoryGoodsTotal, hasFilters, tooltip, tooltipStyle, hideTooltip, showTooltip, resetFilters, formatCount, formatMoney, formatDiscount, formatPercent, formatMonth };
   },

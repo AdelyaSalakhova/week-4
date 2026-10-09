@@ -26,6 +26,19 @@ h3 { font-size: 16px; font-weight: 600; }
 .select-option.is-month { padding-left: 18px; }
 .select-option.is-active { background: #eef2eb; }
 .select-option.is-selected { color: var(--green); font-weight: 600; }
+.period-popup { position: absolute; z-index: 30; top: calc(100% + 5px); left: 0; right: 0; padding: 12px; border: 1px solid #d4ddd2; border-radius: 4px; background: #fff; }
+.period-navigation { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.period-year { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.period-arrow { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 3px; background: transparent; color: var(--green); }
+.period-arrow:disabled { opacity: .25; }
+.period-months { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 4px; }
+.period-month { min-width: 0; min-height: 36px; padding: 8px 2px; border: 0; border-radius: 3px; background: transparent; font-size: 12px; line-height: 18px; text-transform: capitalize; }
+.period-month:disabled { opacity: .3; }
+.period-month.is-selected { color: #fff; background: var(--green); }
+.period-arrow:not(:disabled):hover, .period-month:not(:disabled):not(.is-selected):hover, .period-actions button:hover { background: #eef2eb; }
+.period-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e8ece5; }
+.period-actions button { flex: 1; min-height: 32px; padding: 7px 4px; border: 0; border-radius: 3px; background: transparent; color: var(--green); font-size: 12px; line-height: 18px; }
+.period-actions button.is-selected { background: #eef2eb; font-weight: 600; }
 .reset-button { min-height: 38px; padding: 9px 0; border: 0; background: transparent; font-size: 13px; color: var(--green); }
 .reset-button:disabled { opacity: .4; }
 .summary { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 32px; padding: 28px 0 32px; }
