@@ -120,3 +120,8 @@ footer { display: flex; justify-content: space-between; gap: 15px; color: #a0aa9
 
 .category-panel, .ranking-panel { min-width: 0; }
 
+.product-thumb { flex: 0 0 32px; width: 32px; height: 32px; object-fit: contain; background: #fff; border-radius: 3px; }
+.product-row { min-height: 40px; }
+.tooltip-product-heading { display: flex; align-items: center; gap: 12px; }
+.tooltip-product-heading > div { min-width: 0; }
+.tooltip-product-image { flex: 0 0 64px; width: 64px; height: 64px; object-fit: contain; }

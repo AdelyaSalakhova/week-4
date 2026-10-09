@@ -1,6 +1,7 @@
 import { createApp, computed, nextTick, onMounted, onUnmounted, ref, shallowRef, watch } from 'vue/dist/vue.esm-bundler.js';
 import { categoriesForProducts, formatCount, formatDiscount, formatMoney, formatMonth, formatPercent, monthsForYear, periodLabel, productsForMonths, rankProducts, summarizeMonths } from './analytics.js';
 import { drawCategories, drawMonthly } from './charts.js';
+import { productImage } from './images.js';
 const dataUrl = new URL('./data/dashboard.json', import.meta.url).href;
 createApp({
   setup() {
@@ -74,6 +75,6 @@ createApp({
     onUnmounted(() => { observer?.disconnect(); cancelAnimationFrame(frame); window.removeEventListener('scroll', hideTooltip); window.removeEventListener('keydown', dismiss); });
     return { data, loading, error, year, years, selectedMonth, category, categoryOptions, frequencyMetric, limit, summary, period, overviewPeriod,
       ordersChart, spendChart, discountChart, categoriesChart, categories, filteredProducts, frequencyTop, spendingTop, frequencyMaximum, spendingMaximum,
-      categoryGoodsTotal, hasFilters, tooltip, tooltipStyle, hideTooltip, showTooltip, resetFilters, formatCount, formatMoney, formatDiscount, formatPercent, formatMonth };
+      productImage, categoryGoodsTotal, hasFilters, tooltip, tooltipStyle, hideTooltip, showTooltip, resetFilters, formatCount, formatMoney, formatDiscount, formatPercent, formatMonth };
   },
 }).mount('#app');
