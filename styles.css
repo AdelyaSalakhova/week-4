@@ -69,7 +69,7 @@ h3 { font-size: 16px; font-weight: 600; }
 .product-heading { margin-bottom: 22px; }
 .analysis-grid { display: grid; grid-template-columns: .95fr 1.25fr 1.25fr; gap: 34px; align-items: start; }
 .category-panel > h3 { min-height: 28px; line-height: 28px; }
-.categories-chart { padding-top: 34px; }
+.categories-chart { padding-top: 7px; }
 .category-row { cursor: pointer; }
 .category-label { font-size: 13px; fill: #445b4b; }
 .category-value { font-size: 13px; fill: #506251; font-variant-numeric: tabular-nums; }
@@ -130,7 +130,6 @@ h3 { font-size: 16px; font-weight: 600; }
 
 .period-recent { margin-top: 10px; padding-top: 0; border-top: 0; }
 .period-recent + .period-actions { margin-top: 5px; padding-top: 6px; }
-.current-month-label { color: var(--muted); font-size: 13px; }
 .current-value { font-size: 22px; font-weight: 600; color: var(--green); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .current-value.amber-text { color: #a47334; }
 .category-detail { font-size: 12px; fill: #657269; font-variant-numeric: tabular-nums; }
