@@ -137,5 +137,3 @@ h3 { font-size: 16px; font-weight: 600; }
 .price-trend-heading h5 { margin: 0; font-size: 13px; font-weight: 600; }
 .price-trend-heading span { font-size: 12px; color: var(--muted); }
 .price-trend-chart { display: block; width: 100%; height: auto; margin-top: 4px; }
-
-.price-year-label { font: 12px Arial, sans-serif; fill: #657269; }

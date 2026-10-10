@@ -45,7 +45,7 @@ createApp({
       const x0 = event.type === 'focus' ? rect.left + rect.width / 2 : event.clientX;
       const y0 = event.type === 'focus' ? rect.top : event.clientY;
       const width = content.kind === 'product' ? 640 : 280;
-      const height = content.kind === 'product' ? 340 + Math.ceil(overviewMonths.value.length / 24) * 158 : 290;
+      const height = content.kind === 'product' ? 340 + Math.ceil(overviewMonths.value.length / 12) * (overviewMonths.value.length > 24 ? 96 : 132) : 290;
       let x = x0 + 15, y = y0 - height;
       if (x + width > window.innerWidth - 12) x = x0 - width - 15;
       if (y < 12) y = y0 + 18;
