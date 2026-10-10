@@ -27,8 +27,8 @@
         <div class="section-heading"><h2 id="monthly-title">{{ year === 'recent' ? 'Динамика за 24 месяца' : 'Динамика по месяцам' }}</h2></div>
         <div class="monthly-grid">
           <article class="chart-panel"><div class="panel-heading"><h3>Количество заказов</h3><strong class="current-value" data-current="orders" :title="'За ' + formatMonth(currentMonth)">{{ formatCount(currentSummary.orders) }}</strong></div><div class="mini-legend"><span><i class="legend-dot green"></i>Доставлено</span><span><i class="legend-dot gray"></i>Отменено</span></div><div ref="ordersChart" class="monthly-chart orders-chart"></div></article>
-          <article class="chart-panel"><div class="panel-heading"><h3>Сумма трат</h3><strong class="current-value" data-current="spent" :title="'За ' + formatMonth(currentMonth)">{{ formatMoney(currentSummary.spent) }}</strong></div><p class="panel-note">Только доставленные заказы</p><div ref="spendChart" class="monthly-chart spend-chart"></div></article>
-          <article class="chart-panel"><div class="panel-heading"><h3>Средняя скидка</h3><strong class="current-value amber-text" data-current="discount" :title="'За ' + formatMonth(currentMonth)">{{ formatDiscount(currentSummary.averageDiscount) }}</strong></div><p class="panel-note">С учётом количества единиц товара</p><div ref="discountChart" class="monthly-chart discount-chart"></div></article>
+          <article class="chart-panel"><div class="panel-heading"><h3>Сумма трат</h3><strong class="current-value" data-current="spent" :title="'За ' + formatMonth(currentMonth)">{{ formatMoney(currentSummary.spent) }}</strong></div><div ref="spendChart" class="monthly-chart spend-chart"></div></article>
+          <article class="chart-panel"><div class="panel-heading"><h3>Средняя скидка</h3><strong class="current-value amber-text" data-current="discount" :title="'За ' + formatMonth(currentMonth)">{{ formatDiscount(currentSummary.averageDiscount) }}</strong></div><div ref="discountChart" class="monthly-chart discount-chart"></div></article>
         </div>
       </section>
       <section class="products-section" aria-labelledby="products-title">

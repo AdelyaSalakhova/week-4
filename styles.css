@@ -51,9 +51,11 @@ h3 { font-size: 16px; font-weight: 600; }
 .monthly-section { padding-top: 8px; }
 .monthly-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 32px; }
 .chart-panel, .category-panel, .ranking-panel { min-width: 0; }
+.chart-panel { display: grid; grid-template-rows: auto 27px auto; }
+.chart-panel > .monthly-chart { grid-row: 3; }
 .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 28px; }
 .unit { color: var(--muted); font-size: 12px; white-space: nowrap; }
-.panel-note, .mini-legend { font-size: 12px; color: var(--muted); line-height: 1.5; min-height: 27px; padding-top: 6px; }
+.mini-legend { font-size: 12px; color: var(--muted); line-height: 1.5; min-height: 27px; padding-top: 6px; }
 .mini-legend { display: flex; gap: 14px; }
 .mini-legend span { display: flex; align-items: baseline; gap: 5px; }
 .legend-dot { width: 6px; height: 6px; display: inline-block; border-radius: 1px; }
